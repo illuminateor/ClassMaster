@@ -22,14 +22,30 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         $user = User::factory()->create([
-            'name' => 'Test User',
+            'name' => 'Admin',
             'email' => 'test@example.com',
         ]);
 
         $user->assignRole('admin');
 
+        $user = User::factory()->create([
+            'name' => 'User',
+            'email' => 'user@example.com',
+        ]);
+
+        $user->assignRole('user');
+
+        $user = User::factory()->create([
+            'name' => 'User Two',
+            'email' => 'user2@example.com',
+        ]);
+
+        $user->assignRole('user');
+
         $this->call([
             CategorySeeder::class,
+            CourseSeeder::class,
         ]);
+
     }
 }

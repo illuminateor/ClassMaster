@@ -31,6 +31,11 @@ export function AppSidebar() {
             href: dashboard(),
             icon: LayoutGrid,
         },
+        {
+            title: 'Courses',
+            href: '/courses',
+            icon: BookOpen,
+        },
     ];
 
     if (isAdmin) {
