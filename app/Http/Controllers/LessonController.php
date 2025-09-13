@@ -6,6 +6,8 @@ use App\Models\Lesson;
 use App\Http\Requests\StoreLessonRequest;
 use App\Http\Requests\UpdateLessonRequest;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
+use App\Models\Course;
 
 class LessonController extends Controller
 {
@@ -36,6 +38,9 @@ class LessonController extends Controller
 
         $data = $request->validated();
         $data['user_id'] = auth()->id();
+
+        $lastPosition = Lesson::where('course_id', $data['course_id'])->max('position');
+        $data['position'] = $lastPosition ? $lastPosition + 1 : 1;
 
         Lesson::create($data);
 
@@ -93,5 +98,18 @@ class LessonController extends Controller
         $lesson->delete();
 
         return to_route('courses.edit', $courseId);
+    }
+
+    public function reorder(Course $course, Request $request)
+    {
+        $this->authorize('update', $course);
+
+        $lessonIds = $request->input('lesson_ids');
+
+        foreach ($lessonIds as $index => $lessonId) {
+            Lesson::where('id', $lessonId)->where('course_id', $course->id)->update(['position' => $index + 1]);
+        }
+
+        return back();
     }
 }

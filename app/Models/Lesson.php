@@ -15,7 +15,14 @@ class Lesson extends Model
         'title',
         'description',
         'video_url',
+        'position',
     ];
+    protected static function booted(): void
+    {
+        static::addGlobalScope('ordered', function ($query) {
+            $query->orderBy('position');
+        });
+    }
     public function course()
     {
         return $this->belongsTo(Course::class);

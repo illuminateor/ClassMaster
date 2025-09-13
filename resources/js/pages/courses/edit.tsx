@@ -1,5 +1,5 @@
 import { update } from '@/actions/App/Http/Controllers/CourseController';
-import { destroy } from '@/actions/App/Http/Controllers/LessonController';
+import { destroy, reorder } from '@/actions/App/Http/Controllers/LessonController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -7,9 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Category } from '@/types';
+import { DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { Input } from '@headlessui/react';
 import { Form, Head, Link, router } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
+import { useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -47,6 +51,62 @@ export default function Edit({ categories, course }: EditProps) {
         if (confirmed) {
             router.delete(destroy(id));
         }
+    };
+
+    const [lessons, setLessons] = useState<Lesson[]>(course.lessons);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        }),
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+
+        if (active.id !== over?.id) {
+            setLessons((items) => {
+                const oldIndex = items.findIndex((item) => item.id === active.id);
+                const newIndex = items.findIndex((item) => item.id === over?.id);
+                const newItems = arrayMove(items, oldIndex, newIndex);
+                router.post(
+                    reorder({ course: course.id }),
+                    {
+                        lesson_ids: newItems.map((lesson) => lesson.id),
+                    },
+                    {
+                        preserveScroll: true,
+                    },
+                );
+                return newItems;
+            });
+        }
+    };
+
+    const SortableTableRow = ({ lesson }: { lesson: Lesson }) => {
+        const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: lesson.id });
+
+        const style = {
+            transform: CSS.Transform.toString(transform),
+            transition,
+        };
+
+        return (
+            <TableRow ref={setNodeRef} style={style} {...attributes} {...listeners} className="hover:cursor-pointer">
+                <TableCell className="font-medium">{lesson.id}</TableCell>
+                <TableCell>{lesson.title}</TableCell>
+                <TableCell className="flex items-center gap-2">
+                    <Button asChild>
+                        <Link href={`/lessons/${lesson.id}`}>Show</Link>
+                    </Button>
+                    <Button asChild>
+                        <Link href={`/lessons/${lesson.id}/edit`}>Edit</Link>
+                    </Button>
+                    <Button onClick={() => handleDelete(lesson.id)}>Delete</Button>
+                </TableCell>
+            </TableRow>
+        );
     };
 
     return (
@@ -122,34 +182,26 @@ export default function Edit({ categories, course }: EditProps) {
                             <Link href={`/courses/${course.id}/lessons/create`}>Add lesson</Link>
                         </Button>
                     </div>
-                    <Table>
-                        <TableCaption>A list of course lessons.</TableCaption>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[100px]">Id</TableHead>
-                                <TableHead className="w-full">Title</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {course?.lessons &&
-                                course.lessons.map((lesson) => (
-                                    <TableRow key={course.id}>
-                                        <TableCell className="font-medium">{lesson.id}</TableCell>
-                                        <TableCell>{lesson.title}</TableCell>
-                                        <TableCell className="flex items-center gap-2">
-                                            <Button asChild>
-                                                <Link href={`/lessons/${lesson.id}`}>Show</Link>
-                                            </Button>
-                                            <Button asChild>
-                                                <Link href={`/lessons/${lesson.id}/edit`}>Edit</Link>
-                                            </Button>
-                                            <Button onClick={() => handleDelete(lesson.id)}>Delete</Button>
-                                        </TableCell>
+                    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+                        <SortableContext items={lessons.map((lesson) => lesson.id)} strategy={verticalListSortingStrategy}>
+                            <Table>
+                                <TableCaption>A list of course lessons</TableCaption>
+                                <TableCaption>Drag and drop lessons to order them</TableCaption>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead className="w-[100px]">Id</TableHead>
+                                        <TableHead className="w-full">Title</TableHead>
+                                        <TableHead>Actions</TableHead>
                                     </TableRow>
-                                ))}
-                        </TableBody>
-                    </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {lessons.map((lesson) => (
+                                        <SortableTableRow key={lesson.id} lesson={lesson} />
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </SortableContext>
+                    </DndContext>
                 </div>
             </div>
         </AppLayout>

@@ -87,7 +87,7 @@ export default function Show({ course }: ShowProps) {
                         <TableBody>
                             {course?.lessons &&
                                 course.lessons.map((lesson) => (
-                                    <TableRow key={course.id}>
+                                    <TableRow key={lesson.id}>
                                         <TableCell className="font-medium">{lesson.id}</TableCell>
                                         <TableCell>{lesson.title}</TableCell>
                                         <TableCell className="flex items-center gap-2">
