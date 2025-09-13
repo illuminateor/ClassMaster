@@ -1,12 +1,14 @@
 import { update } from '@/actions/App/Http/Controllers/CourseController';
+import { destroy } from '@/actions/App/Http/Controllers/LessonController';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Category } from '@/types';
 import { Input } from '@headlessui/react';
-import { Form, Head, Link } from '@inertiajs/react';
+import { Form, Head, Link, router } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -19,12 +21,19 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/courses/edit',
     },
 ];
+interface Lesson {
+    id: number;
+    title: string;
+    description: string;
+    course_id: number;
+}
 
 interface Course {
     id: number;
     title: string;
     description: string;
     category_id: number;
+    lessons: Lesson[];
 }
 
 interface EditProps {
@@ -33,6 +42,13 @@ interface EditProps {
 }
 
 export default function Edit({ categories, course }: EditProps) {
+    const handleDelete = (id: number) => {
+        const confirmed = window.confirm('Are you sure you want to delete this category?');
+        if (confirmed) {
+            router.delete(destroy(id));
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Edit" />
@@ -43,7 +59,7 @@ export default function Edit({ categories, course }: EditProps) {
                             <Link href="/courses">Back to courses</Link>
                         </Button>
                     </div>
-                    <Form action={update(course.id)} disableWhileProcessing className="flex flex-col gap-6">
+                    <Form action={update(course.id)} disableWhileProcessing className="mb-4 flex flex-col gap-6">
                         {({ processing, errors }) => (
                             <>
                                 <div className="grid gap-6 p-4">
@@ -101,6 +117,39 @@ export default function Edit({ categories, course }: EditProps) {
                             </>
                         )}
                     </Form>
+                    <div className="flex items-center justify-end gap-2 md:flex-row">
+                        <Button asChild>
+                            <Link href={`/courses/${course.id}/lessons/create`}>Add lesson</Link>
+                        </Button>
+                    </div>
+                    <Table>
+                        <TableCaption>A list of course lessons.</TableCaption>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead className="w-[100px]">Id</TableHead>
+                                <TableHead className="w-full">Title</TableHead>
+                                <TableHead>Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {course?.lessons &&
+                                course.lessons.map((lesson) => (
+                                    <TableRow key={course.id}>
+                                        <TableCell className="font-medium">{lesson.id}</TableCell>
+                                        <TableCell>{lesson.title}</TableCell>
+                                        <TableCell className="flex items-center gap-2">
+                                            <Button asChild>
+                                                <Link href={`/lessons/${lesson.id}`}>Show</Link>
+                                            </Button>
+                                            <Button asChild>
+                                                <Link href={`/lessons/${lesson.id}/edit`}>Edit</Link>
+                                            </Button>
+                                            <Button onClick={() => handleDelete(lesson.id)}>Delete</Button>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                        </TableBody>
+                    </Table>
                 </div>
             </div>
         </AppLayout>

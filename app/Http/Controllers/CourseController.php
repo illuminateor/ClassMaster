@@ -54,7 +54,7 @@ class CourseController extends Controller
         $this->authorize('view', $course);
 
         return Inertia::render('courses/show', [
-            'course' => $course->load('category', 'user'),
+            'course' => $course->load('category', 'user', 'lessons'),
         ]);
     }
 
@@ -66,7 +66,7 @@ class CourseController extends Controller
         $this->authorize('update', $course);
 
         return Inertia::render('courses/edit', [
-            'course' => $course,
+            'course' => $course->load('category', 'user', 'lessons'),
             'categories' => Category::all(['id', 'name']),
         ]);
     }
