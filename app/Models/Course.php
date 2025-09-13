@@ -9,7 +9,7 @@ class Course extends Model
 {
     /** @use HasFactory<\Database\Factories\CourseFactory> */
     use HasFactory;
-    protected $fillable = ['title', 'description', 'category_id', 'user_id'];
+    protected $fillable = ['title', 'description', 'category_id', 'user_id', 'thumbnail', 'preview_video_url'];
 
     public function category()
     {

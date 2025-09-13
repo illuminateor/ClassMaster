@@ -11,7 +11,7 @@ import { DndContext, type DragEndEvent, KeyboardSensor, PointerSensor, useSensor
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Input } from '@headlessui/react';
-import { Form, Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 
@@ -38,6 +38,8 @@ interface Course {
     description: string;
     category_id: number;
     lessons: Lesson[];
+    thumbnail: string | null;
+    preview_video_url: string | null;
 }
 
 interface EditProps {
@@ -51,6 +53,42 @@ export default function Edit({ categories, course }: EditProps) {
         if (confirmed) {
             router.delete(destroy(id));
         }
+    };
+
+    const { data, setData, processing, errors } = useForm({
+        title: course.title,
+        description: course.description,
+        category_id: course.category_id.toString(),
+        thumbnail: null as File | string | null,
+        preview_video_url: course.preview_video_url || '',
+    });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+        Object.entries(data).forEach(([key, value]) => {
+            if (key === 'thumbnail' && value instanceof File) {
+                formData.append(key, value);
+            } else if (typeof value === 'object' && value !== null) {
+                formData.append(key, JSON.stringify(value));
+            } else if (value !== null && value !== undefined) {
+                formData.append(key, value);
+            }
+        });
+        router.post(update(course.id), formData, {
+            forceFormData: true,
+        });
+    };
+
+    const handleClearThumbnail = () => {
+        router.patch(
+            `/courses/${course.id}`,
+            { ...data, thumbnail: null },
+            {
+                preserveScroll: true,
+            },
+        );
     };
 
     const [lessons, setLessons] = useState<Lesson[]>(course.lessons);
@@ -119,64 +157,103 @@ export default function Edit({ categories, course }: EditProps) {
                             <Link href="/courses">Back to courses</Link>
                         </Button>
                     </div>
-                    <Form action={update(course.id)} disableWhileProcessing className="mb-4 flex flex-col gap-6">
-                        {({ processing, errors }) => (
-                            <>
-                                <div className="grid gap-6 p-4">
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="category_id">Category</Label>
-                                        <Select name="category_id" defaultValue={course.category_id.toString()}>
-                                            <SelectTrigger className="w-full" tabIndex={3}>
-                                                <SelectValue placeholder="Select a category" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {categories.map((category) => (
-                                                    <SelectItem key={category.id} value={category.id.toString()}>
-                                                        {category.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError message={errors.category_id} className="mt-2" />
-                                    </div>
+                    <form onSubmit={submit} className="mb-4 flex flex-col gap-6" encType="multipart/form-data">
+                        <div className="grid gap-6 p-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="category_id">Category</Label>
+                                <Select name="category_id" value={data.category_id} onValueChange={(value) => setData('category_id', value)}>
+                                    <SelectTrigger className="w-full" tabIndex={3}>
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {categories.map((category) => (
+                                            <SelectItem key={category.id} value={category.id.toString()}>
+                                                {category.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.category_id} className="mt-2" />
+                            </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="title">Title</Label>
-                                        <Input
-                                            id="title"
-                                            type="text"
-                                            required
-                                            autoFocus
-                                            tabIndex={1}
-                                            autoComplete="title"
-                                            name="title"
-                                            placeholder="Name"
-                                            defaultValue={course.title}
-                                        />
-                                        <InputError message={errors.title} className="mt-2" />
-                                    </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="title">Title</Label>
+                                <Input
+                                    id="title"
+                                    type="text"
+                                    required
+                                    autoFocus
+                                    tabIndex={1}
+                                    autoComplete="title"
+                                    name="title"
+                                    placeholder="Name"
+                                    value={data.title}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('title', e.target.value)}
+                                />
+                                <InputError message={errors.title} className="mt-2" />
+                            </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="description">Description</Label>
-                                        <textarea
-                                            id="description"
-                                            name="description"
-                                            tabIndex={2}
-                                            placeholder="Description"
-                                            className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-                                            defaultValue={course.description}
-                                        />
-                                        <InputError message={errors.description} className="mt-2" />
-                                    </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="description">Description</Label>
+                                <textarea
+                                    id="description"
+                                    name="description"
+                                    tabIndex={2}
+                                    placeholder="Description"
+                                    className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                    value={data.description}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setData('description', e.target.value)}
+                                />
+                                <InputError message={errors.description} className="mt-2" />
+                            </div>
 
-                                    <Button type="submit" className="mt-2 w-full" tabIndex={5}>
-                                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                                        Edit
-                                    </Button>
-                                </div>
-                            </>
-                        )}
-                    </Form>
+                            <div className="grid gap-2">
+                                <Label htmlFor="thumbnail">Thumbnail</Label>
+                                {course.thumbnail && (
+                                    <div className="relative h-32 w-32">
+                                        <img src={`/storage/${course.thumbnail}`} alt="Thumbnail" className="h-full w-full object-cover" />
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            size="sm"
+                                            onClick={handleClearThumbnail}
+                                            className="absolute top-0 right-0"
+                                        >
+                                            Clear
+                                        </Button>
+                                    </div>
+                                )}
+                                <Input
+                                    id="thumbnail"
+                                    type="file"
+                                    tabIndex={3}
+                                    name="thumbnail"
+                                    className="block w-full text-sm text-slate-500 file:mr-4 file:rounded-md file:border-0 file:bg-primary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-primary-foreground hover:file:bg-primary/90"
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('thumbnail', e.target.files?.[0] || null)}
+                                />
+                                <InputError message={errors.thumbnail} className="mt-2" />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="preview_video_url">Preview Video URL</Label>
+                                <Input
+                                    id="preview_video_url"
+                                    type="url"
+                                    tabIndex={4}
+                                    name="preview_video_url"
+                                    placeholder="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                                    value={data.preview_video_url}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setData('preview_video_url', e.target.value)}
+                                />
+                                <InputError message={errors.preview_video_url} className="mt-2" />
+                            </div>
+
+                            <Button type="submit" className="mt-2 w-full" tabIndex={5}>
+                                {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+                                Edit
+                            </Button>
+                        </div>
+                    </form>
                     <div className="flex items-center justify-end gap-2 md:flex-row">
                         <Button asChild>
                             <Link href={`/courses/${course.id}/lessons/create`}>Add lesson</Link>

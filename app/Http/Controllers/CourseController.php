@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCourseRequest;
 use Inertia\Inertia;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
@@ -62,7 +63,13 @@ class CourseController extends Controller
     {
         $this->authorize('create', Course::class);
 
-        auth()->user()->courses()->create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
+        }
+
+        auth()->user()->courses()->create($data);
 
         return to_route('courses.index');
     }
@@ -99,7 +106,22 @@ class CourseController extends Controller
     {
         $this->authorize('update', $course);
 
-        $course->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('thumbnail')) {
+            if ($course->thumbnail) {
+                Storage::disk('public')->delete($course->thumbnail);
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('thumbnails', 'public');
+        } elseif ($request->has('thumbnail') && $request->input('thumbnail') === null) {
+            // If thumbnail is explicitly set to null (e.g., cleared by user)
+            if ($course->thumbnail) {
+                Storage::disk('public')->delete($course->thumbnail);
+            }
+            $data['thumbnail'] = null;
+        }
+
+        $course->update($data);
 
         return to_route('courses.index');
     }

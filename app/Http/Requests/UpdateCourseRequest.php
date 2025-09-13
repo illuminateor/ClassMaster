@@ -25,6 +25,8 @@ class UpdateCourseRequest extends FormRequest
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'category_id' => 'required|exists:categories,id',
+            'thumbnail' => 'nullable|image|max:2048',
+            'preview_video_url' => 'nullable|url|max:255',
         ];
     }
 }

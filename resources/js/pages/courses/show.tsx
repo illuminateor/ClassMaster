@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { User, type BreadcrumbItem, type Category } from '@/types';
+import { type PageProps } from '@inertiajs/core';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -32,6 +33,14 @@ interface Course {
     user: User;
     category: Category;
     lessons: Lesson[];
+    thumbnail: string | null;
+    preview_video_url: string | null;
+}
+
+interface AuthProps extends PageProps {
+    auth: {
+        user: User & { roles: { name: string }[] };
+    };
 }
 
 interface ShowProps {
@@ -39,7 +48,7 @@ interface ShowProps {
 }
 
 export default function Show({ course }: ShowProps) {
-    const { auth } = usePage().props;
+    const { auth } = usePage<AuthProps>().props;
     const isAdmin = auth.user?.roles.some((role: { name: string }) => role.name === 'admin');
 
     const handleDelete = (id: number) => {
@@ -66,6 +75,22 @@ export default function Show({ course }: ShowProps) {
                         </CardHeader>
                         <CardContent>
                             <p>{course.description}</p>
+                            <h2 className="mt-4">Thumbnail</h2>
+                            {course.thumbnail && (
+                                <img src={`/storage/${course.thumbnail}`} alt="Course Thumbnail" className="mb-4 max-w-[600px] rounded-md" />
+                            )}
+                            <h2 className="mt-4">Video Preview</h2>
+                            {course.preview_video_url && (
+                                <div className="aspect-video w-[600px]">
+                                    <iframe
+                                        src={`https://www.youtube.com/embed/${course.preview_video_url.split('v=')[1].split('&')[0]}`}
+                                        frameBorder="0"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        allowFullScreen
+                                        className="h-full w-full rounded-md"
+                                    ></iframe>
+                                </div>
+                            )}
                         </CardContent>
                         <CardFooter>
                             {course?.lessons[0] && (

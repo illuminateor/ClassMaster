@@ -6,6 +6,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { useDebounce } from '@/hooks/use-debounce';
 import AppLayout from '@/layouts/app-layout';
 import { type Auth, type BreadcrumbItem, type Category, type User } from '@/types';
+import { type PageProps } from '@inertiajs/core';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
@@ -37,8 +38,14 @@ interface IndexProps {
     };
 }
 
+interface AuthProps extends PageProps {
+    auth: {
+        user: User & { roles: { name: string }[] };
+    };
+}
+
 export default function Index({ courses, categories, filters }: IndexProps) {
-    const { auth } = usePage().props;
+    const { auth } = usePage<AuthProps>().props;
     const isAdmin = auth.user?.roles.some((role: { name: string }) => role.name === 'admin');
     const isInstructor = auth.user?.roles.some((role: { name: string }) => role.name === 'instructor');
 
