@@ -7,18 +7,39 @@ use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\UpdateCourseRequest;
 use Inertia\Inertia;
 use App\Models\Category;
+use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Course::class);
 
+        $query = Course::with('category', 'user');
+
+        if ($request->has('search') && $request->input('search') !== null) {
+            $query->where('title', 'like', '%' . $request->input('search') . '%');
+        }
+
+        if ($request->has('category_id') && $request->input('category_id') !== null) {
+            $query->where('category_id', $request->input('category_id'));
+        }
+
+        $sortOrder = $request->input('sort_order', 'desc');
+
+        if ($sortOrder === 'asc') {
+            $query->oldest('created_at');
+        } else {
+            $query->latest('created_at');
+        }
+
         return Inertia::render('courses/index', [
-            'courses' => Course::with('category', 'user')->get(),
+            'courses' => $query->get(),
+            'categories' => Category::all(['id', 'name']),
+            'filters' => $request->only(['search', 'category_id', 'sort_order']),
         ]);
     }
 

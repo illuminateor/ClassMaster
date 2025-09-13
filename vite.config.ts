@@ -17,6 +17,11 @@ export default defineConfig({
             formVariants: true,
         }),
     ],
+    resolve: {
+        alias: {
+            '@': '/resources/js',
+        },
+    },
     esbuild: {
         jsx: 'automatic',
     },
