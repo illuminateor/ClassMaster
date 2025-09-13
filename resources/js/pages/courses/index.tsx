@@ -130,8 +130,8 @@ export default function Index({ courses, categories, filters }: IndexProps) {
                                     <TableCell>{course.title}</TableCell>
                                     <TableCell>{course.category.name}</TableCell>
                                     <TableCell>{course.user.name}</TableCell>
-                                    <TableCell>{new Date(course.created_at).toISOString().split('T')[0]}</TableCell>
-                                    <TableCell>{new Date(course.updated_at).toISOString().split('T')[0]}</TableCell>
+                                    <TableCell className="min-w-[100px]">{new Date(course.created_at).toISOString().split('T')[0]}</TableCell>
+                                    <TableCell className="min-w-[100px]">{new Date(course.updated_at).toISOString().split('T')[0]}</TableCell>
                                     <TableCell className="flex items-center gap-2">
                                         <Button asChild>
                                             <Link href={`/courses/${course.id}`}>Show</Link>
