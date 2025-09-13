@@ -22,8 +22,8 @@ interface Course {
     description: string;
     category: Category;
     user: User;
-    created_at: Date;
-    updated_at: Date;
+    created_at: string;
+    updated_at: string;
 }
 
 interface IndexProps {
@@ -124,12 +124,14 @@ export default function Index({ courses, categories, filters }: IndexProps) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {courses.map((course: { id: number; title: string; description: string; category: Category; user: User }) => (
+                            {courses.map((course: Course) => (
                                 <TableRow key={course.id}>
                                     <TableCell className="font-medium">{course.id}</TableCell>
                                     <TableCell>{course.title}</TableCell>
                                     <TableCell>{course.category.name}</TableCell>
                                     <TableCell>{course.user.name}</TableCell>
+                                    <TableCell>{new Date(course.created_at).toISOString().split('T')[0]}</TableCell>
+                                    <TableCell>{new Date(course.updated_at).toISOString().split('T')[0]}</TableCell>
                                     <TableCell className="flex items-center gap-2">
                                         <Button asChild>
                                             <Link href={`/courses/${course.id}`}>Show</Link>
