@@ -1,6 +1,6 @@
 import { destroy } from '@/actions/App/Http/Controllers/LessonController';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
 import { User, type BreadcrumbItem, type Category } from '@/types';
@@ -67,6 +67,16 @@ export default function Show({ course }: ShowProps) {
                         <CardContent>
                             <p>{course.description}</p>
                         </CardContent>
+                        <CardFooter>
+                            {course?.lessons[0] && (
+                                <CardDescription>
+                                    {' '}
+                                    <Button asChild>
+                                        <Link href={`/lessons/${course?.lessons[0]?.id}`}>Start Course</Link>
+                                    </Button>
+                                </CardDescription>
+                            )}
+                        </CardFooter>
                     </Card>
                     <div className="mt-4 flex items-center justify-end gap-2 md:flex-row">
                         {(isAdmin || auth.user?.id === course.user.id) && (
