@@ -4,8 +4,8 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import { Link } from '@inertiajs/react';
+import { BookOpen, Folder, Home, LayoutGrid } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [
@@ -22,9 +22,6 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth } = usePage().props;
-    const isAdmin = auth.user?.roles.some((role: { name: string }) => role.name === 'admin');
-
     const mainNavItems: NavItem[] = [
         {
             title: 'Dashboard',
@@ -36,15 +33,17 @@ export function AppSidebar() {
             href: '/courses',
             icon: BookOpen,
         },
-    ];
-
-    if (isAdmin) {
-        mainNavItems.push({
+        {
             title: 'Categories',
             href: '/categories',
             icon: Folder,
-        });
-    }
+        },
+        {
+            title: 'Frontpage',
+            href: '/',
+            icon: Home,
+        },
+    ];
 
     return (
         <Sidebar collapsible="icon" variant="inset">

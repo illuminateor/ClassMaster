@@ -2,8 +2,8 @@ import { destroy } from '@/actions/App/Http/Controllers/CategoryController';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/react';
+import { User, type BreadcrumbItem } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -18,9 +18,17 @@ interface Category {
 }
 interface IndexProps {
     categories: Category[];
+    auth: {
+        user: User & { roles: { name: string }[] };
+    };
 }
 
 export default function Index({ categories }: IndexProps) {
+    // If you want to get auth from usePage, use the correct type:
+    const { auth } = usePage<{ auth: IndexProps['auth'] }>().props;
+
+    const isAdmin = auth.user?.roles.some((role: { name: string }) => role.name === 'admin');
+
     const handleDelete = (id: number) => {
         const confirmed = window.confirm('Are you sure you want to delete this category?');
         if (confirmed) {
@@ -54,9 +62,16 @@ export default function Index({ categories }: IndexProps) {
                                     <TableCell>{category.name}</TableCell>
                                     <TableCell className="flex items-center gap-2">
                                         <Button asChild>
-                                            <Link href={`/categories/${category.id}/edit`}>Edit</Link>
+                                            <Link href={`/courses?category_id=${category.id}`}>Show</Link>
                                         </Button>
-                                        <Button onClick={() => handleDelete(category.id)}>Delete</Button>
+                                        {isAdmin && (
+                                            <>
+                                                <Button asChild>
+                                                    <Link href={`/categories/${category.id}/edit`}>Edit</Link>
+                                                </Button>
+                                                <Button onClick={() => handleDelete(category.id)}>Delete</Button>
+                                            </>
+                                        )}
                                     </TableCell>
                                 </TableRow>
                             ))}

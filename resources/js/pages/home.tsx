@@ -1,14 +1,60 @@
+import { index } from '@/actions/App/Http/Controllers/CourseController';
 import CourseList from '@/components/course-list';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useDebounce } from '@/hooks/use-debounce';
 import { dashboard, login, register } from '@/routes';
-import { type SharedData } from '@/types';
-import { Head, Link, usePage } from '@inertiajs/react';
-import { Menu } from 'lucide-react';
+import { type Category, type SharedData } from '@/types';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
-export default function Welcome() {
+import { Menu } from 'lucide-react';
+import React, { useState } from 'react';
+
+interface Course {
+    id: number;
+    title: string;
+    description: string;
+    thumbnail: string;
+    category: {
+        name: string;
+    };
+    user: {
+        name: string;
+    };
+}
+
+interface HomeProps {
+    courses: Course[];
+    categories?: Category[];
+}
+
+export default function Home({ courses, categories }: HomeProps) {
     const { auth } = usePage<SharedData>().props;
+    // Add state for search query and category
+
+    const [search, setSearch] = useState('');
+    const [category, setCategory] = useState('');
+    const [sortOrder] = useState('desc');
+
+    const debouncedSearch = useDebounce(search, 500);
+
+    // Handle search submit
+    const handleSearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        router.get(
+            index(),
+            {
+                search: debouncedSearch,
+                category_id: category,
+                sort_order: sortOrder,
+            },
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
 
     return (
         <>
@@ -28,15 +74,42 @@ export default function Welcome() {
                                 ClassMaster
                             </Link>
                         </div>
+                        {/* Desktop navbar */}
                         <div className="hidden items-center gap-2 lg:flex">
+                            {/* Search form */}
+                            <form onSubmit={handleSearch} className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    placeholder="Search posts..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="rounded border px-2 py-1 text-sm"
+                                />
+                                {categories && categories.length > 0 && (
+                                    <select
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                        className="rounded border px-2 py-1 text-sm"
+                                    >
+                                        {categories.map((cat) => (
+                                            <option key={cat.id} value={cat.id}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                )}
+                                <Button type="submit" size="sm" className="ml-1">
+                                    Search
+                                </Button>
+                            </form>
                             <Link
-                                href="#"
+                                href="/courses"
                                 className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
                             >
                                 Browse
                             </Link>
                             <Link
-                                href="#"
+                                href="/categories"
                                 className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
                             >
                                 Categories
@@ -66,6 +139,7 @@ export default function Welcome() {
                             )}
                             <ThemeToggle />
                         </div>
+                        {/* Mobile navbar */}
                         <div className="flex items-center gap-2 lg:hidden">
                             <ThemeToggle />
                             <Sheet>
@@ -75,10 +149,36 @@ export default function Welcome() {
                                     </Button>
                                 </SheetTrigger>
                                 <SheetContent side="right">
+                                    {/* Mobile search form */}
+                                    <form onSubmit={handleSearch} className="mb-4 flex flex-col items-center gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Search posts..."
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="w-full rounded border px-2 py-1 text-sm"
+                                        />
+                                        {categories && categories.length > 0 && (
+                                            <select
+                                                value={category}
+                                                onChange={(e) => setCategory(e.target.value)}
+                                                className="w-full rounded border px-2 py-1 text-sm"
+                                            >
+                                                {categories.map((cat) => (
+                                                    <option key={cat.id} value={cat.id}>
+                                                        {cat.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        )}
+                                        <Button type="submit" size="sm" className="w-full">
+                                            Search
+                                        </Button>
+                                    </form>
                                     <nav className="mt-8 flex flex-col items-center justify-center gap-2">
                                         <SheetClose asChild>
                                             <Link
-                                                href="#"
+                                                href="/courses"
                                                 className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] dark:text-[#EDEDEC] dark:hover:border-[#3E3E3A]"
                                             >
                                                 Browse
@@ -134,19 +234,19 @@ export default function Welcome() {
                             <p className="mb-8 font-semibold">Feeling overwhelmed? Get started on one of our comprehensive courses</p>
                             <p className="text-center">
                                 <Link
-                                    href="#"
+                                    href="/courses"
                                     className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-center leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                 >
                                     Browse courses
                                 </Link>
                             </p>
                         </div>
-                        <CourseList title="Popular courses" courses={[1, 2, 3, 4, 5, 6]} />
-                        <CourseList title="Newest courses" courses={[1, 2, 3, 4, 5, 6]} />
+                        <CourseList title="Popular courses" courses={courses} />
+                        <CourseList title="Newest courses" courses={courses} />
                         <div className="relative mb-4 w-full py-10 text-[#1b1b18] dark:text-[#EDEDEC]">
                             <p className="text-center">
                                 <Link
-                                    href="#"
+                                    href="/courses"
                                     className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-center leading-normal text-[#1b1b18] hover:border-[#1915014a] dark:border-[#3E3E3A] dark:text-[#EDEDEC] dark:hover:border-[#62605b]"
                                 >
                                     More courses
