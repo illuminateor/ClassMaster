@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/react';
+import { BookOpen, MonitorPlay } from 'lucide-react';
 
 interface Lesson {
     id: number;
@@ -39,7 +40,7 @@ function getYouTubeId(url: string): string | null {
         }
 
         return null; // not a valid YouTube video URL
-    } catch (e: any) {
+    } catch {
         return null; // invalid URL
     }
 }
@@ -68,8 +69,30 @@ export default function Show({ lesson, lessons }: ShowProps) {
         },
     ];
 
+    const navItems =
+        lessons.length > 0
+            ? [
+                  {
+                      title: 'Back to Course',
+                      href: '/courses/' + courseId,
+                      icon: BookOpen,
+                  },
+                  ...lessons.map((lessonItem) => ({
+                      title: lessonItem.title,
+                      href: `/lessons/${lessonItem.id}`,
+                      icon: MonitorPlay,
+                  })),
+              ]
+            : [
+                  {
+                      title: 'Back to Course',
+                      href: '/courses/' + courseId,
+                      icon: BookOpen,
+                  },
+              ];
+
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs} navItems={navItems}>
             <Head title="Add" />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
@@ -78,29 +101,20 @@ export default function Show({ lesson, lessons }: ShowProps) {
                             <Link href={`/courses/${courseId}`}>Back to course</Link>
                         </Button>
                     </div>
-                    <div className="flex gap-2">
-                        <div className="width-[200px] flex flex-col gap-2 border-r border-gray-200 p-4">
-                            {lessons.map((lessonItem) => (
-                                <Button asChild key={lessonItem.id} variant={lessonItem.id !== lesson.id ? 'outline' : 'default'} className="w-full">
-                                    <Link href={`/lessons/${lessonItem.id}`}>{lessonItem.title}</Link>
-                                </Button>
-                            ))}
-                        </div>
-                        <div className="flex-1 p-4">
-                            {videoId && (
-                                <iframe
-                                    width={width}
-                                    height={height}
-                                    src={`https://www.youtube.com/embed/${videoId}`}
-                                    title="YouTube video player"
-                                    frameBorder="0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            )}
-                            <h1 className="text-2xl font-bold">{lesson.title}</h1>
-                            <p className="mt-4">{lesson.description}</p>
-                        </div>
+                    <div className="flex-1 p-4">
+                        {videoId && (
+                            <iframe
+                                width={width}
+                                height={height}
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                title="YouTube video player"
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            />
+                        )}
+                        <h1 className="text-2xl font-bold">{lesson.title}</h1>
+                        <p className="mt-4">{lesson.description}</p>
                     </div>
                 </div>
             </div>
