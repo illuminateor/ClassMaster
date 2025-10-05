@@ -91,6 +91,7 @@ export default function Home({ courses, categories }: HomeProps) {
                                         onChange={(e) => setCategory(e.target.value)}
                                         className="rounded border px-2 py-1 text-sm"
                                     >
+                                        <option value="all">All Categories</option>
                                         {categories.map((cat) => (
                                             <option key={cat.id} value={cat.id}>
                                                 {cat.name}
