@@ -35,9 +35,6 @@ export default function CourseItem({ course }: { course: Course }) {
                             <CardDescription>{shortDescription}</CardDescription>
                             <CardDescription>By {course.user.name}</CardDescription>
                         </div>
-                        <div className="flex flex-col justify-end">
-                            <span className="font-semibold">$20,00</span>
-                        </div>
                     </div>
                 </CardHeader>
             </Card>

@@ -80,7 +80,7 @@ export default function Home({ courses, categories }: HomeProps) {
                             <form onSubmit={handleSearch} className="flex items-center gap-2">
                                 <input
                                     type="text"
-                                    placeholder="Search posts..."
+                                    placeholder="Search courses..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     className="rounded border px-2 py-1 text-sm"
@@ -154,7 +154,7 @@ export default function Home({ courses, categories }: HomeProps) {
                                     <form onSubmit={handleSearch} className="mb-4 flex flex-col items-center gap-2">
                                         <input
                                             type="text"
-                                            placeholder="Search posts..."
+                                            placeholder="Search courses..."
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
                                             className="w-full rounded border px-2 py-1 text-sm"
