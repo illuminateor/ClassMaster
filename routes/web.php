@@ -8,7 +8,7 @@ Route::get('/', [PageController::class, 'home'])->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
+        return redirect('/courses');
     })->name('dashboard');
     Route::resource('categories', \App\Http\Controllers\CategoryController::class);
     Route::resource('courses', \App\Http\Controllers\CourseController::class);

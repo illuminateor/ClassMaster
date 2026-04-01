@@ -5,7 +5,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, Sid
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, Home, LayoutGrid } from 'lucide-react';
+import { BookOpen, Folder, Home } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const footerNavItems: NavItem[] = [];
@@ -27,11 +27,6 @@ export function AppSidebar({ navItems = [] }: { navItems?: NavItem[] }) {
                   },
               ]
         : [
-              {
-                  title: 'Dashboard',
-                  href: dashboard(),
-                  icon: LayoutGrid,
-              },
               {
                   title: 'Courses',
                   href: '/courses',

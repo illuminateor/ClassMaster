@@ -83,13 +83,13 @@ export default function Home({ courses, categories }: HomeProps) {
                                     placeholder="Search courses..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="rounded border px-2 py-1 text-sm"
+                                    className="rounded border px-2 py-1 text-sm dark:text-white"
                                 />
                                 {categories && categories.length > 0 && (
                                     <select
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
-                                        className="rounded border px-2 py-1 text-sm"
+                                        className="rounded border px-2 py-1 text-sm dark:bg-black dark:text-white"
                                     >
                                         <option value="all">All Categories</option>
                                         {categories.map((cat) => (
