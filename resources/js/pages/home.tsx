@@ -259,7 +259,7 @@ export default function Home({ courses, categories }: HomeProps) {
                 <div className="hidden h-14.5 lg:block"></div>
             </div>
             <footer className="flex justify-center gap-4 bg-gray-200 p-10 text-gray-800 dark:bg-gray-800 dark:text-white">
-                <span className="">ClassMaster &copy; 2025</span>
+                <span className="">ClassMaster &copy; {new Date().getFullYear()}</span>
             </footer>
         </>
     );
